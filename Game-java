@@ -1,0 +1,83 @@
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.Random;
+public class Game {
+    private TicTacToe game;
+    private JFrame frame;
+    private JButton[][] buttons;
+    private boolean isTwoPlayerMode;
+    public Game() {
+        game = new TicTacToe();
+        isTwoPlayerMode = chooseGameMode();
+        frame = new JFrame("Tic Tac Toe");
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setLayout(new GridLayout(3, 3));
+        buttons = new JButton[3][3];
+        initializeButtons();
+        frame.pack();
+        frame.setVisible(true);
+    }
+    private boolean chooseGameMode() {
+        Object[] options = {"Two Players", "Player vs. Computer"};
+        int choice = JOptionPane.showOptionDialog(null, "Choose Game Mode", "Game Mode",
+                JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
+        return choice == 0; 
+    }
+    private void initializeButtons() {
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++) {
+                JButton button = new JButton("-");
+                button.addActionListener(new ButtonListener(i, j));
+                buttons[i][j] = button;
+                frame.add(button);
+            }
+        }
+    }
+    private class ButtonListener implements ActionListener {
+        private int row;
+        private int col;
+        public ButtonListener(int row, int col) {
+            this.row = row;
+            this.col = col;
+        }
+        public void actionPerformed(ActionEvent e) {
+            char player = game.isXTurn() ? 'X' : 'O';
+            if (game.board[row][col] == '-') {
+                game.makeMove(row, col, player);
+                buttons[row][col].setText(String.valueOf(player));
+                if (game.hasWon(player)) {
+                    JOptionPane.showMessageDialog(frame, "Player " + player + " wins!");
+                    frame.dispose();
+                } else if (game.isBoardFull()) {
+                    JOptionPane.showMessageDialog(frame, "It's a draw!");
+                    frame.dispose();
+                } else if (!isTwoPlayerMode) {
+                    computerMove(); 
+                }
+            }
+        }
+    }
+    private void computerMove() {
+        Random rand = new Random();
+        int row, col;
+        do {
+            row = rand.nextInt(3);
+            col = rand.nextInt(3);
+        } while (game.board[row][col] != '-'); 
+        char player = game.isXTurn() ? 'X' : 'O';
+        game.makeMove(row, col, player);
+        buttons[row][col].setText(String.valueOf(player));
+        if (game.hasWon(player)) {
+            JOptionPane.showMessageDialog(frame, "Player " + player + " wins!");
+            frame.dispose();
+        } else if (game.isBoardFull()) {
+            JOptionPane.showMessageDialog(frame, "It's a draw!");
+            frame.dispose();
+        }
+    }
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(() -> new Game());
+    }
+}
